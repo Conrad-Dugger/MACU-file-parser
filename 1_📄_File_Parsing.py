@@ -1,10 +1,5 @@
-# pip install --upgrade streamlit
+# ---- EXTERNAL MODULES ----
 import streamlit as st
-import time, random
-
-
-# ---- RENAME STREAMLIT VARIABLES ----
-SS = st.session_state
 
 # ---- CONFIG ----
 st.set_page_config(
@@ -19,47 +14,40 @@ st.set_page_config(
     },
 )
 
+# ---- INTERNAL MODULES ----
+from utils.progress_bars import track_progress, remove_progress_bar
+
 # ---- GLOBAL VARIABLES ----
-
-# ---- GLOBAL REFRESHES ----
-ITEM_UPDATE_SLEEP = 30
-PROGRESS = 0
-PROGRESS_INCREMENT = 0.03
-PROGRESS_PLACEHOLDER = st.empty()
-PROGRESS_BAR = PROGRESS_PLACEHOLDER.progress(PROGRESS)
-
-# ---- GLOBAL LISTS ----
-LOADING_STRINGS = ["Loadin' stuff..."]
+SS = st.session_state  # Make a shorthand for session state
+PRIMARY_COLOR = "blue"
+SECONDARY_COLOR = "violet"
+SIDEBAR_COLOR = "gray"
 
 
 def main():
+    # -- DEFAULT SECTIONS --
     print("\n# ---- MAIN() ---- ")
     set_banner()
     set_header()
     set_sidebar()
-    check_statefulness()
 
+    # -- DATA PREP --
+    check_statefulness()
     if SS.fresh_query_p1:
         print(f"Query marked as FRESH, running...")
         data_query()
 
+    # -- DATA PARSE --
     apply_filters()
     apply_exclusions()
+
+    # -- DATA SECTIONS --
     set_section_metrics()
     set_section_plots()
-    set_section_dataframes()
+    set_section_tables()
+
+    # -- CLEANUP --
     remove_progress_bar()
-
-
-# ---- WRAPPERS ----
-def track_progress(func):
-    def wrapper(*args, **kwargs):
-        auto_increase_progress_bar()
-        result = func(*args, **kwargs)
-        auto_increase_progress_bar()
-        return result
-
-    return wrapper
 
 
 # ---- BANNER ----
@@ -75,13 +63,13 @@ def set_banner():
 @track_progress
 def set_header():
     print("set_header()")
-    st.header("Header", divider="blue")
+    st.header("Header", divider=PRIMARY_COLOR)
 
 
 # ---- SIDEBAR ----
 @track_progress
 def set_sidebar():
-    st.sidebar.header("Filters:", divider="gray")
+    st.sidebar.header("Filters:", divider=SIDEBAR_COLOR)
 
 
 @track_progress
@@ -113,22 +101,22 @@ def init_session_globals_p1():
     SS.init_session_globals_p1 = False
 
 
-# ---- DATAFRAMES ----
+# ---- TABLES ----
 @track_progress
-def set_section_dataframes():
-    st.header("Tables", divider="violet")
+def set_section_tables():
+    st.header("Tables", divider=SECONDARY_COLOR)
 
 
 # ---- METRICS ----
 @track_progress
 def set_section_metrics():
-    st.header("Metrics", divider="violet")
+    st.header("Metrics", divider=SECONDARY_COLOR)
 
 
 # ---- PLOTS ----
 @track_progress
 def set_section_plots():
-    st.header("Plots", divider="violet")
+    st.header("Plots", divider=SECONDARY_COLOR)
 
 
 # ---- QUERIES ----
@@ -136,46 +124,6 @@ def set_section_plots():
 def data_query():
     print(f"data_query()")
     SS.fresh_query_p1 = False
-
-
-# ---- PROGRESS BAR FUNCS ----
-def auto_increase_progress_bar():
-    global PROGRESS_BAR
-    global PROGRESS
-    PROGRESS = PROGRESS + PROGRESS_INCREMENT
-    if isinstance(PROGRESS_INCREMENT, float):
-        if PROGRESS > 0.95:
-            PROGRESS = 0.95
-            PROGRESS_BAR.progress(PROGRESS, text=random.choice(LOADING_STRINGS))
-    else:
-        if PROGRESS > 95:
-            PROGRESS = 95
-            PROGRESS_BAR.progress(PROGRESS, text=random.choice(LOADING_STRINGS))
-    PROGRESS_BAR.progress(PROGRESS, text=random.choice(LOADING_STRINGS))
-
-
-def increase_progress_bar(increment):
-    global PROGRESS_BAR
-    global PROGRESS
-    PROGRESS = PROGRESS + increment
-    print(f"PROGRESS: {PROGRESS}")
-    if PROGRESS > 100:
-        PROGRESS = 100
-        PROGRESS_BAR.progress(PROGRESS)
-        print(f"ENDING PROGRESS BAR EARLY, ALTER INCREMENT")
-        remove_progress_bar()
-    PROGRESS_BAR.progress(PROGRESS)
-
-
-def remove_progress_bar():
-    print(f"remove_progress_bar()")
-    global PROGRESS_BAR
-    global PROGRESS
-    global PROGRESS_PLACEHOLDER
-    PROGRESS = 100
-    PROGRESS_BAR.progress(PROGRESS)
-    time.sleep(0.5)
-    PROGRESS_PLACEHOLDER.empty()
 
 
 if __name__ == "__main__":
