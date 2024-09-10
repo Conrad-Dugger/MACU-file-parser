@@ -149,39 +149,55 @@ def pdf_demo():
     if uploaded_files:
         # Get a Panda DataFrame of all pdfs and the text we extract
         if st.button("Scrape Uploaded PDFs", key="scrape_pdfs"):
+            print("Scraping uploaded PDFs...")
             scraped_data = PDF_SCRAPER.scrape(uploaded_files)
 
+            # Debugging scraped_data
+            print("Scraped data type:", type(scraped_data))
+            print("Scraped data content:", scraped_data)
+
             # Convert the scraped data to a DataFrame
-            print(f"Converting scraped data to DataFrame...")
-            scraped_df = pd.DataFrame(scraped_data)
+            print("Converting scraped data to DataFrame...")
+            try:
+                scraped_df = pd.DataFrame(scraped_data)
+                print(f"Scraped DataFrame: {scraped_df}")
+            except Exception as e:
+                print(f"Error converting to DataFrame: {e}")
+                st.error(f"Error converting to DataFrame: {e}")
+                return
 
-    # Option to download the DataFrame as an Excel file
-    if not scraped_df.empty:
-        # Display scraped data
-        # print(f"Displaying scraped data...")
-        # st.write(scraped_df)
+            # Check if DataFrame is empty
+            if scraped_df.empty:
+                print("DataFrame is empty.")
+                st.write("No data scraped from PDFs.")
+                return
 
-        # Convert DataFrame to Excel file
-        print(f"Converting scraped data to Excel file...")
-        try:
-            print(f"Le sigh...")
-            output = BytesIO()
-            print(f"Le sigh...")
-            with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-                scraped_df.to_excel(writer, index=False, sheet_name="Sheet1")
-            print(f"Le sigh...")
-            output.seek(0)
-            # Provide user a download button
-            print(f"Providing download button...")
-            st.download_button(
-                label="Download Excel file",
-                data=output,
-                file_name="parsed_timesheets.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-        except Exception as e:
-            print(f"Error during Excel file creation: {e}")
-            st.error(f"Error during Excel file creation: {e}")
+            # Option to download the DataFrame as an Excel file
+            if not scraped_df.empty:
+                # Display scraped data
+                print("Displaying scraped data...")
+                st.write(scraped_df)
+
+                # Convert DataFrame to Excel file
+                print("Converting scraped data to Excel file...")
+                output = BytesIO()
+                try:
+                    print("Before ExcelWriter")
+                    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+                        scraped_df.to_excel(writer, index=False, sheet_name="Sheet1")
+                    print("After ExcelWriter")
+                    output.seek(0)
+                    # Provide user a download button
+                    print("Providing download button...")
+                    st.download_button(
+                        label="Download Excel file",
+                        data=output,
+                        file_name="parsed_timesheets.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    )
+                except Exception as e:
+                    print(f"Error during Excel file creation: {e}")
+                    st.error(f"Error during Excel file creation: {e}")
 
 
 if __name__ == "__main__":
