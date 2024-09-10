@@ -1,9 +1,8 @@
 # ---- EXTERNAL MODULES ----
 import streamlit as st
 import pandas as pd
-import fitz  # PyMuPDF
-import re
 from io import BytesIO
+
 
 # ---- CONFIG ----
 st.set_page_config(
@@ -20,6 +19,7 @@ st.set_page_config(
 
 # ---- INTERNAL MODULES ----
 from utils.progress_bars import track_progress, remove_progress_bar
+from scrapers import pdf_demo as PDF_SCRAPER
 
 # ---- GLOBAL VARIABLES ----
 SS = st.session_state  # Make a shorthand for session state
@@ -49,6 +49,10 @@ def main():
     set_section_metrics()
     set_section_plots()
     set_section_tables()
+
+    # -- DEMO AREA --
+    print("\n# ---- PDF_DEMO() ---- ")
+    pdf_demo()
 
     # -- CLEANUP --
     remove_progress_bar()
@@ -128,6 +132,56 @@ def set_section_plots():
 def data_query():
     print(f"data_query()")
     SS.fresh_query_p1 = False
+
+
+# ---- PDF DEMO ----
+@track_progress
+def pdf_demo():
+    st.header("PDF Scraper Demo", divider="red")
+
+    # Button to upload multiple files
+    uploaded_files = st.file_uploader(
+        "Upload PDF files", type="pdf", accept_multiple_files=True
+    )
+
+    scraped_df = pd.DataFrame()
+    # Only scrape when files get uploaded
+    if uploaded_files:
+        # Get a Panda DataFrame of all pdfs and the text we extract
+        if st.button("Scrape Uploaded PDFs", key="scrape_pdfs"):
+            scraped_data = PDF_SCRAPER.scrape(uploaded_files)
+
+            # Convert the scraped data to a DataFrame
+            print(f"Converting scraped data to DataFrame...")
+            scraped_df = pd.DataFrame(scraped_data)
+
+    # Option to download the DataFrame as an Excel file
+    if not scraped_df.empty:
+        # Display scraped data
+        # print(f"Displaying scraped data...")
+        # st.write(scraped_df)
+
+        # Convert DataFrame to Excel file
+        print(f"Converting scraped data to Excel file...")
+        try:
+            print(f"Le sigh...")
+            output = BytesIO()
+            print(f"Le sigh...")
+            with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+                scraped_df.to_excel(writer, index=False, sheet_name="Sheet1")
+            print(f"Le sigh...")
+            output.seek(0)
+            # Provide user a download button
+            print(f"Providing download button...")
+            st.download_button(
+                label="Download Excel file",
+                data=output,
+                file_name="parsed_timesheets.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        except Exception as e:
+            print(f"Error during Excel file creation: {e}")
+            st.error(f"Error during Excel file creation: {e}")
 
 
 if __name__ == "__main__":
