@@ -98,5 +98,19 @@ def extract_employee_and_daterange(pdf_text):
 
 
 def extract_community_timesums(pdf_text):
-    # Dummy implementation for debugging
-    return {"Community A": "10:00", "Community B": "5:00"}
+    # # Dummy implementation for debugging
+    # return {"Community A": "10:00", "Community B": "5:00"}
+    # Pattern to match Community (Named "Property" in the PDF) and Total Time
+    property_time_pattern = r"\s+(\w[\w\s]+)\n\d+\.\d+\n(\d+\.\d+)"
+    communities_times = re.findall(property_time_pattern, pdf_text)
+
+    # Summing Total Time for each community
+    community_time_sum = {}
+    for community, time in communities_times:
+        if community in community_time_sum:
+            community_time_sum[community] += float(time)
+        else:
+            community_time_sum[community] = float(time)
+
+    print(f"Found {len(community_time_sum)} communities!")
+    return community_time_sum
