@@ -1,5 +1,9 @@
 # ---- EXTERNAL MODULES ----
 import streamlit as st
+import pandas as pd
+import fitz  # PyMuPDF
+import re
+from io import BytesIO
 
 # ---- CONFIG ----
 st.set_page_config(
