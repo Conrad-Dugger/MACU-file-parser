@@ -6,7 +6,8 @@ primaryColor="#D02736" # red
 backgroundColor="#010001" # black
 
 # Background color used for the sidebar and most interactive widgets.
-secondaryBackgroundColor="#1A191B" # dark gray
+
+secondaryBackgroundColor="#62151B" # darker red # 2F1619 or 502024 dark greyish red # 1A191B dark gray
 
 # Font family for all text in the app, except code blocks. One of the "sans serif", "serif", or "monospace".
 textColor="#C5B7BA" # light gray
